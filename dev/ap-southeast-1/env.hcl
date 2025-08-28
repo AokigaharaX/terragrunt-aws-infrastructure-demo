@@ -6,6 +6,13 @@ locals {
     Project     = "DevOps"
     Environment = local.environment
   }
+  # remove all ".terragrunt-stack/" from the path
+  clean_path = replace(path_relative_to_include(), ".terragrunt-stack/", "")
+  # unit (e.g. "vpc")
+  unit_name = basename(local.clean_path)
+  # stack name (e.g. "configuration-center-api")
+  stack_name = basename(dirname(local.clean_path))
+  stack_path = "${local.stack_name}/${local.unit_name}"
 }
 
 remote_state {
@@ -16,7 +23,7 @@ remote_state {
   }
   config = {
     bucket       = "demo-iac-terraform-state"
-    key          = "infrastructure/${lower(local.environment)}/${local.region}/${replace(path_relative_to_include(), ".terragrunt-stack/", "")}/terraform.tfstate"
+    key          = "infrastructure/${lower(local.environment)}/${local.region}/${local.stack_path}/terraform.tfstate"
     region       = local.region
     encrypt      = true
     use_lockfile = true
